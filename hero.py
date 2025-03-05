@@ -1,8 +1,11 @@
 import pygame
+
 from blocks import Block
-from constans import FRAME_DELAY_RUN, GRAVITY_SPEED, JUMP_COUNTER_DEFAULT, JUMP_SPEED, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED
+from backgrounds import Background
+from constans import FRAME_DELAY_RUN, GRAVITY_SPEED, HEIGHT_HERO, HW, JUMP_COUNTER_DEFAULT, JUMP_SPEED, REAL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED, WIDTH_HERO
 from images import JUMP_HERO, JUMP_SKINNY_HERO, RUN_HERO_1, RUN_HERO_2, RUN_SKINNY_HERO_1, RUN_SKINNY_HERO_2, STANDING_HERO, STANDING_SKINNY_HERO
 from sprite import Sprite
+
 
 class Hero(Sprite):
     def __init__(self, x, y, width, height, image_name):
@@ -30,7 +33,9 @@ class Hero(Sprite):
         self.standing_frame = self._load_image(STANDING_HERO)
         self.skinny_standing_frame = self._load_image(STANDING_SKINNY_HERO)
         self.jumping_frame = self._load_image(JUMP_HERO)
+        self.jumping_frame_left = pygame.transform.flip(self.jumping_frame, True, False)
         self.skinny_jumping_frame = self._load_image(JUMP_SKINNY_HERO)
+        self.skinny_jumping_frame_left = pygame.transform.flip(self.skinny_jumping_frame, True, False)
         self.current_frame = 0
         self.image = self.standing_frame
         self.last_frame_update = pygame.time.get_ticks()
@@ -45,6 +50,7 @@ class Hero(Sprite):
             pygame.transform.flip(self.skinny_running_frames[1], True, False)
         ]
 
+
     def _gravity(self):
         '''
         Handles the gravity effect by checking if the hero is on the floor.
@@ -52,6 +58,7 @@ class Hero(Sprite):
         '''
         if not self._is_on_floor() and not self.jump_active:
             self.y += self.gravity_speed
+            Block.offset_y += self.gravity_speed
             self.gravity_active = True
         else:
             self.gravity_active = False
@@ -74,20 +81,28 @@ class Hero(Sprite):
     def _start_jump(self):
         if self._is_on_floor() and not self.jump_active:
             self.jump_active = True
-            if not self.is_skinny:
+            if pygame.key.get_pressed()[pygame.K_LEFT]:
+                self.image = self.jumping_frame_left
+            elif pygame.key.get_pressed()[pygame.K_RIGHT]:
                 self.image = self.jumping_frame
             else:
-                self.image = self.skinny_jumping_frame
+                self.image = self.jumping_frame
+            self._update_sprite()
         elif not self._is_on_floor():
-            if not self.is_skinny:
+            if pygame.key.get_pressed()[pygame.K_LEFT]:
+                self.image = self.jumping_frame_left
+            elif pygame.key.get_pressed()[pygame.K_RIGHT]:
                 self.image = self.jumping_frame
             else:
-                self.image = self.skinny_jumping_frame
+                self.image = self.jumping_frame
+            self._update_sprite()
+
 
     def _jump_process(self):
         if self.jump_active:
             if self.jump_counter_current != 0:
                 self.jump_counter_current -= 1
+                Block.offset_y -= self.jump_speed
                 self.y -= self.jump_speed
             else:
                 self.jump_counter_current = self.jump_counter_default
@@ -95,15 +110,36 @@ class Hero(Sprite):
 
     def _move_right(self):
         if self.right_x < SCREEN_WIDTH and not any([block.collide_hero_left(main_hero) for block in Block.block_list]):
-            self.x += self.speed
-            self.is_running = True
-            self._update_sprite()
+            if Block.offset_x >= REAL_WIDTH - SCREEN_WIDTH:
+                self.x += self.speed
+                self.is_running = True
+                self._update_sprite()
+            elif self.x >= HW:
+                Block.offset_x += self.speed
+                Background.offset_x += self.speed
+                self.is_running = True
+                self._update_sprite()
+            else:
+                self.x += self.speed
+                self.is_running = True
+                self._update_sprite()
+
 
     def _move_left(self):
         if self.x > 0 and not any([block.collide_hero_right(main_hero) for block in Block.block_list]):
-            self.x -= self.speed
-            self.is_running = True
-            self._update_sprite()
+            if Block.offset_x <= 0:
+                self.x -= self.speed
+                self.is_running = True
+                self._update_sprite()
+            elif self.x >= HW:
+                self.x -= self.speed
+                self.is_running = True
+                self._update_sprite()
+            else:
+                Block.offset_x -= self.speed
+                Background.offset_x -= self.speed
+                self.is_running = True
+                self._update_sprite()
 
     def _stop_running(self):
         self.is_running = False
@@ -127,9 +163,15 @@ class Hero(Sprite):
                     self.current_frame = (self.current_frame + 1) % len(self.skinny_running_frames)
                 if pygame.key.get_pressed()[pygame.K_LEFT]:
                     if not self.is_skinny:
-                        self.image = self.running_frames_left[self.current_frame]
+                        if not self.jump_active:
+                            self.image = self.running_frames_left[self.current_frame]
+                        else:
+                            self.image = self.jumping_frame_left
                     else:
-                        self.image = self.skinny_running_frames_left[self.current_frame]
+                        if not self.jump_active:
+                            self.image = self.skinny_running_frames_left[self.current_frame]
+                        else:
+                            self.image = self.skinny_jumping_frame_left
                 else:
                     if not self.is_skinny:
                         self.image = self.running_frames[self.current_frame]
@@ -138,4 +180,4 @@ class Hero(Sprite):
                 self.last_frame_update = current_time
 
 
-main_hero = Hero(50,50, 40,50, 'images/heroes/fat_hero.png')
+main_hero = Hero(WIDTH_HERO, HEIGHT_HERO, WIDTH_HERO, HEIGHT_HERO, 'images/heroes/fat_hero.png')

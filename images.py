@@ -8,3 +8,7 @@ RUN_SKINNY_HERO_2 = 'images/heroes/skinny_hero_run_1.png'
 JUMP_SKINNY_HERO = 'images/heroes/skinny_hero_jump.png'
 
 BLOCK = 'images/bg/block.png'
+RIVER_BLOCK = 'images/bg/river_block.png'
+CAKE_BLOCK = 'images/items/cakes.png'
+FRUIT_BLOCK = 'images/items/fruits.png'
+BG = 'images/bg/bg.png'

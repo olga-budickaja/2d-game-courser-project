@@ -1,17 +1,21 @@
 import pygame
 
+from backgrounds import main_bg
 from blocks import Block
-from hero import main_hero
-from constans import BACGROUND_COLOR, DISPLAY, FPS
+from hero import Hero, main_hero
+from constans import BACGROUND_COLOR, DISPLAY, FPS, HEIGHT_HERO, WIDTH_HERO
 
 screen = pygame.display.set_mode(DISPLAY)
 
 def start_game():
+    global main_hero
     game_run = True
+
     clock = pygame.time.Clock()
 
     while game_run:
         screen.fill(BACGROUND_COLOR)
+        main_bg.process()
         main_hero.process()
         Block.all_block_process()
 
