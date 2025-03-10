@@ -12,3 +12,5 @@ RIVER_BLOCK = 'images/bg/river_block.png'
 CAKE_BLOCK = 'images/items/cakes.png'
 FRUIT_BLOCK = 'images/items/fruits.png'
 BG = 'images/bg/bg.png'
+
+COIN = 'images/items/coin.png'

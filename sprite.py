@@ -8,6 +8,7 @@ screen = pygame.display.set_mode(DISPLAY)
 class Sprite(pygame.Rect):
     def __init__(self, x: int, y: int, width: int, height: int, image_name: str):
         super().__init__(x, y, width, height)
+        self.is_active = True
         self.image_name = image_name
         self.image = None
         self._load_image()
@@ -40,6 +41,7 @@ class Sprite(pygame.Rect):
         pass
 
     def process(self):
-        self._draw()
-        self._move()
-        self._gravity()
+        if self.is_active:
+            self._draw()
+            self._move()
+            self._gravity()

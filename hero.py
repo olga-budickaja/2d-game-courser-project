@@ -2,8 +2,9 @@ import pygame
 
 from blocks import Block
 from backgrounds import Background
-from constans import FRAME_DELAY_RUN, GRAVITY_SPEED, HEIGHT_HERO, HW, JUMP_COUNTER_DEFAULT, JUMP_SPEED, REAL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED, WIDTH_HERO
-from images import JUMP_HERO, JUMP_SKINNY_HERO, RUN_HERO_1, RUN_HERO_2, RUN_SKINNY_HERO_1, RUN_SKINNY_HERO_2, STANDING_HERO, STANDING_SKINNY_HERO
+from coin import Coin
+from constans import FRAME_DELAY_RUN, GRAVITY_SPEED, HEIGHT_HERO, HW, COUNTER_DEFAULT, JUMP_SPEED, REAL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED, WIDTH_HERO
+from images import FRUIT_BLOCK, JUMP_HERO, JUMP_SKINNY_HERO, RUN_HERO_1, RUN_HERO_2, RUN_SKINNY_HERO_1, RUN_SKINNY_HERO_2, STANDING_HERO, STANDING_SKINNY_HERO
 from sprite import Sprite
 
 
@@ -19,7 +20,7 @@ class Hero(Sprite):
 
         self.jump_speed = JUMP_SPEED
         self.jump_active = False
-        self.jump_counter_default = JUMP_COUNTER_DEFAULT
+        self.jump_counter_default = COUNTER_DEFAULT
         self.jump_counter_current = self.jump_counter_default
 
         self.running_frames = [
@@ -50,6 +51,9 @@ class Hero(Sprite):
             pygame.transform.flip(self.skinny_running_frames[1], True, False)
         ]
 
+        self.reload_counter_default = COUNTER_DEFAULT
+        self.reload_counter_current = self.reload_counter_default
+
 
     def _gravity(self):
         '''
@@ -75,7 +79,7 @@ class Hero(Sprite):
             self._start_jump()
 
     def _is_on_floor(self):
-        if self.bottom_y >= SCREEN_HEIGHT or any([block.collide_hero_up(main_hero) for block in Block.block_list]):
+        if self.bottom_y >= SCREEN_HEIGHT or any([block.collide_hero_up(main_hero) for block in Block.get_block_list()]):
             return True
 
     def _start_jump(self):
@@ -109,7 +113,7 @@ class Hero(Sprite):
                 self.jump_active = False
 
     def _move_right(self):
-        if self.right_x < SCREEN_WIDTH and not any([block.collide_hero_left(main_hero) for block in Block.block_list]):
+        if self.right_x < SCREEN_WIDTH and not any([block.collide_hero_left(main_hero) for block in Block.get_block_list()]):
             if Block.offset_x >= REAL_WIDTH - SCREEN_WIDTH:
                 self.x += self.speed
                 self.is_running = True
@@ -126,7 +130,7 @@ class Hero(Sprite):
 
 
     def _move_left(self):
-        if self.x > 0 and not any([block.collide_hero_right(main_hero) for block in Block.block_list]):
+        if self.x > 0 and not any([block.collide_hero_right(main_hero) for block in Block.get_block_list()]):
             if Block.offset_x <= 0:
                 self.x -= self.speed
                 self.is_running = True
@@ -149,9 +153,21 @@ class Hero(Sprite):
             else:
                 self.image = self.skinny_standing_frame
 
+    def _get_ball(self):
+        for block in Block.get_block_list():
+            if block.image_name == FRUIT_BLOCK:
+                if block.collide_hero_right(main_hero) or block.collide_hero_left(main_hero) or block.collide_hero_up(main_hero):
+                    if self.reload_counter_current == 0:
+                        Coin.create_by_block(block)
+                        self.is_skinny = True
+                        self.reload_counter_current = self.reload_counter_default
+                    else:
+                        self.reload_counter_current -= 1
+
     def process(self):
         super().process()
         self._jump_process()
+        self._get_ball()
 
     def _update_sprite(self):
         if self.is_running:
