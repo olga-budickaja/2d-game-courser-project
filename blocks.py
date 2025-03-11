@@ -1,6 +1,6 @@
 import time
 from coin import Coin
-from constans import BLOCK_HEIGHT, BLOCK_WIDTH, COUNTER_DEFAULT, HEIGHT_HERO, OFFSET_X, OFFSET_Y, SCREEN_START, WIDTH_HERO
+from constans import BLOCK_HEIGHT, BLOCK_WIDTH, COUNTER_DEFAULT, HEIGHT_HERO, MINUS_COIN, OFFSET_X, OFFSET_Y, SCREEN_START, WIDTH_HERO
 from images import BLOCK, CAKE_BLOCK, COIN, FRUIT_BLOCK, RIVER_BLOCK
 from map import GAME_MAP
 from sprite import Sprite
@@ -56,27 +56,16 @@ class Block(Sprite):
         cls.offset_count = cls.offset_y + cls.height_block * cls.offset_idx
 
 
-    def collide_blocks(self):
-        for block in self.get_block_list():
-            if block.colliderect(Coin):
-                Coin.is_active = False
-                self.is_active = False
-
     def collide_hero_up(self, hero):
         if self.colliderect(hero):
-            if self.image_name == BLOCK or self.image_name == FRUIT_BLOCK:
+            if self.image_name == BLOCK or self.image_name == FRUIT_BLOCK or self.image_name == CAKE_BLOCK:
                 if self.y + self.offset_count >= hero.bottom_y - self.height - 5:
                     return True
             else:
-                self.offset_idx = 1
-                self.offset_count = 1
-                self.x, self.y = (OFFSET_X, -OFFSET_Y)
-                self.x_static, self.y_static = (OFFSET_X, -OFFSET_Y)
+                Sprite.reset_game(hero, Block.get_block_list())
                 Block.init()
-                hero.x, hero.y = WIDTH_HERO, HEIGHT_HERO
+                hero.counter_coin -= MINUS_COIN
                 return False
-
-
 
     def collide_hero_left(self, hero):
         if self.colliderect(hero):
@@ -95,9 +84,12 @@ class Block(Sprite):
         self.x = self.x_static - self.offset_x
         self.y = self.y_static - self.offset_y
 
+    def process(self):
+        return super().process()
+
     @classmethod
     def all_block_process(cls):
-        for block in cls.block_list:
+        for block in cls.get_block_list():
             block.process()
 
 Block.init()

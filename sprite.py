@@ -1,7 +1,7 @@
 import os
 
 import pygame
-from constans import DISPLAY, FILE_DIR
+from constans import DISPLAY, FILE_DIR, HEIGHT_HERO, OFFSET_X, OFFSET_Y, WIDTH_HERO
 
 screen = pygame.display.set_mode(DISPLAY)
 
@@ -45,3 +45,15 @@ class Sprite(pygame.Rect):
             self._draw()
             self._move()
             self._gravity()
+
+    @classmethod
+    def reset_game(cls, hero, blocks):
+        for block in blocks:
+            block.offset_idx = 1
+            block.offset_count = 1
+            block.x, block.y = (OFFSET_X, -OFFSET_Y)
+            block.x_static, block.y_static = (OFFSET_X, -OFFSET_Y)
+            block.is_active = True
+
+        hero.x, hero.y = WIDTH_HERO, HEIGHT_HERO
+        hero.is_active = True

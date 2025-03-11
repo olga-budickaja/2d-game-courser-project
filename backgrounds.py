@@ -3,7 +3,7 @@ import os
 import pygame
 
 from constans import FILE_DIR
-from images import BG
+from images import BG, GAME_OVER
 from sprite import Sprite, screen
 
 
@@ -31,3 +31,4 @@ class Background(Sprite):
         self.x = self.x_static - self.offset_x
 
 main_bg = Background(0, 0, 4800, 600, BG)
+game_over = Background(150, 100, 500, 249, GAME_OVER)

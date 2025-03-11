@@ -3,8 +3,8 @@ import pygame
 from blocks import Block
 from backgrounds import Background
 from coin import Coin
-from constans import FRAME_DELAY_RUN, GRAVITY_SPEED, HEIGHT_HERO, HW, COUNTER_DEFAULT, JUMP_SPEED, REAL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED, WIDTH_HERO
-from images import FRUIT_BLOCK, JUMP_HERO, JUMP_SKINNY_HERO, RUN_HERO_1, RUN_HERO_2, RUN_SKINNY_HERO_1, RUN_SKINNY_HERO_2, STANDING_HERO, STANDING_SKINNY_HERO
+from constans import COUNTER_COIN, FRAME_DELAY_RUN, GRAVITY_SPEED, HEIGHT_HERO, HW, COUNTER_DEFAULT, JUMP_SPEED, MINUS_COIN, PLUS_COIN, REAL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SPEED, WIDTH_HERO
+from images import CAKE_BLOCK, FRUIT_BLOCK, JUMP_HERO, JUMP_SKINNY_HERO, RUN_HERO_1, RUN_HERO_2, RUN_SKINNY_HERO_1, RUN_SKINNY_HERO_2, STANDING_HERO, STANDING_SKINNY_HERO
 from sprite import Sprite
 
 
@@ -53,6 +53,7 @@ class Hero(Sprite):
 
         self.reload_counter_default = COUNTER_DEFAULT
         self.reload_counter_current = self.reload_counter_default
+        self.counter_coin = COUNTER_COIN
 
 
     def _gravity(self):
@@ -155,19 +156,31 @@ class Hero(Sprite):
 
     def _get_ball(self):
         for block in Block.get_block_list():
-            if block.image_name == FRUIT_BLOCK:
-                if block.collide_hero_right(main_hero) or block.collide_hero_left(main_hero) or block.collide_hero_up(main_hero):
+            if block.collide_hero_up(main_hero) or block.collide_hero_left(main_hero) or block.collide_hero_right(main_hero):
+                if block.image_name == FRUIT_BLOCK:
                     if self.reload_counter_current == 0:
                         Coin.create_by_block(block)
+                        block.is_active = False
                         self.is_skinny = True
                         self.reload_counter_current = self.reload_counter_default
+                        self.counter_coin += PLUS_COIN
                     else:
                         self.reload_counter_current -= 1
+                elif block.image_name == CAKE_BLOCK:
+                    block.is_active = False
+                    self.is_skinny = False
+                    self.counter_coin -= MINUS_COIN
+
+    def _reset_game(self):
+        if self.counter_coin < 1:
+            Sprite.reset_game(self, Block.get_block_list())
+            Block.init()
 
     def process(self):
         super().process()
         self._jump_process()
         self._get_ball()
+        self._reset_game()
 
     def _update_sprite(self):
         if self.is_running:

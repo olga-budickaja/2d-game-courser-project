@@ -14,3 +14,5 @@ FRUIT_BLOCK = 'images/items/fruits.png'
 BG = 'images/bg/bg.png'
 
 COIN = 'images/items/coin.png'
+
+GAME_OVER = 'images/bg/game_over.png'

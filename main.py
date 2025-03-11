@@ -1,12 +1,23 @@
 import pygame
 
-from backgrounds import main_bg
+from backgrounds import main_bg, game_over
 from blocks import Block
+from buttons import draw_buttons
 from coin import Coin
+from fonts import FONT_46
 from hero import main_hero
-from constans import BACGROUND_COLOR, DISPLAY, FPS
+from constans import BACGROUND_COLOR, COLOR_COIN, COUNTER_COIN, DISPLAY, FPS, POSITION_COIN, SCREEN_WIDTH
+
+pygame.init()
+pygame.font.init()
 
 screen = pygame.display.set_mode(DISPLAY)
+
+def draw_coin_counter():
+    """Function to display hearts instead of numbers"""
+    hearts = "♥" * main_hero.counter_coin
+    text = FONT_46.render(hearts, True, COLOR_COIN)
+    screen.blit(text, POSITION_COIN)
 
 def start_game():
     global main_hero
@@ -20,45 +31,32 @@ def start_game():
         main_hero.process()
         Block.all_block_process()
         Coin.all_coin_process()
-
         screen.blit(main_hero.image, (main_hero.x, main_hero.y))
+
+        draw_coin_counter()
+
+        if main_hero.counter_coin < 1:
+            game_over.process()
+            button_restart, button_exit = draw_buttons(screen)
+
+        if main_hero.x >= SCREEN_WIDTH:
+            game_over.process()
+            button_restart, button_exit = draw_buttons(screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                if button_restart.collidepoint(mouse_x, mouse_y):
+                    game_run = True
+                    main_hero.counter_coin = COUNTER_COIN
+                    game_run = True
+                    break
+                elif button_exit.collidepoint(mouse_x, mouse_y):
+                    game_run = False
 
         pygame.display.flip()
         clock.tick(FPS)
 
 start_game()
-
-from typing import List, Dict
-
-def count_repeated_strings(list1: List[str], list2: List[str]) -> Dict[int, List[str]]:
-    """
-    Returns a dictionary where the key is the number of occurrences, the value is a list of strings.
-
-
-    :param last1: List of strings
-    :param last2: List of strings
-
-    :return: Dict[int, List[str]]: Словник {кількість повторень: [рядок, ...]}.
-    :raises ValueError: if the lenght of list < 0 or the lenght of list > 1000
-    """
-    combined_list = list1 + list2
-    count_dict: Dict[str, int] = {}
-
-    for string in combined_list:
-        if string in count_dict:
-            count_dict[string] += 1
-        else:
-            count_dict[string] = 1
-
-    result: Dict[int, List[str]] = {}
-    for string, count in count_dict.items():
-        if count > 1:
-            if count not in result:
-                result[count] = []
-            result[count].append(string)
-
-    return result
